@@ -1,0 +1,35 @@
+{
+    "personal": [
+        {
+          "Id": "1",
+          "Nombre": "Nelvi Berrios",
+          "Celular": "78214523",
+          "Usuario":"nelviBerrios833@gmail.com",
+          "Password": "nelviBerrios833",
+          "Tipo":"Administrador",
+          "Estado": "1",
+          "Opcion":"1"
+        },
+        {
+            "Id": "2",
+            "Nombre": "David Fuentes",
+            "Celular": "63214823",
+            "Usuario":"2023DavidFuentes@gmail.com",
+            "Password": "123456",
+            "Tipo":"Administrador",
+            "Estado": "1",
+            "Opcion":"2"
+        },
+        {
+            "Id": "3",
+            "Nombre": "Rosimar Panozo",
+            "Celular": "76514823",
+            "Usuario":"RosimarVR@gmail.com",
+            "Password": "666666",
+            "Tipo":"Encargado",
+            "Estado": "0",
+            "Opcion":"3"
+        }
+    ]
+      
+}

@@ -1,0 +1,123 @@
+<%- include('../partials/head'); %>
+<body class="bg-light">
+    <%- include('../partials/header'); %>
+    <main class="container border">
+        <br>
+        <h2 class="text-primary text-center">Encargado</h2>
+        <button type="button" class="btn btn-success">Agregar</button>
+        <br>
+        <table id="demo-table" class="table"></table>
+    </main>
+        <!-- The Modal -->
+        <div class="modal" id="myModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">Modal Heading</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        Modal body..
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+</body>
+<%- include('../partials/footer'); %>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {    
+        const columnData = [
+            {
+                select: 0,
+                headerClass: "table-success"
+            },
+            {
+                select: 1,
+                headerClass: "table-success"
+            },
+            {
+                select: 2,
+                headerClass: "table-success"
+            },
+            {
+                select: 3,
+                headerClass: "table-success"
+            },
+            {
+                select: 4,
+                headerClass: "table-success"
+            },
+            {
+                select: 5,
+                render: data => data == 1 ? '<span class="badge bg-success">Activo</span>' : '<span class="badge bg-info">Inactivo</span>',
+                headerClass: "table-success"
+            },
+            {
+                select: 6,
+                render: data => `<button type='button' class='btn btn-warning' data-id='${data}' data-bs-toggle="modal" data-bs-target="#myModal" Editar><i class="fas fa-edit"></i></button> 
+                <button type='button' class='btn btn-danger' data-id='${data}'><i class="fas fa-trash-alt"></i></button>`,
+                type: "text",
+                headerClass: "table-success"
+            }
+        ]
+        // Customise our labels
+        const labelData = {
+            placeholder: "Search students...",
+            searchTitle: "Search within students",
+            perPage: "students per page",
+            noRows: "No students to display",
+            info: "Showing {start} to {end} of {rows} students (Page {page} of {pages} pages)"
+        }
+
+        // Instantiate
+        fetch('/api/personal').then(
+            response => response.json()
+        ).then(
+            data => {
+                // let cabezera = Object.keys(data[0]);
+                let cabezera = ["Id","Nombre","Celular","Usuario","Tipo","Estado","Opcion"];
+                const clavesAExcluir = ["id"];
+                const datatable = new window.simpleDatatables.DataTable("#demo-table", {
+                    data: {
+                        headings: cabezera,
+                        // data: data.map(item  => {console.log(item,Object.values(item)); return Object.values(item);})
+                        // data: data.map(item  => Object.values(item))
+                        data: data.map( x =>{
+                            // console.log(x);
+                            delete x['id'];
+                            delete x['Password'];
+                            return Object.values(x);
+                        })
+                    },
+                    columns: columnData,
+                    labels: labelData,
+                    type: "string"
+                })
+                datatable.dom.addEventListener("click", e => {
+                    if (e.target.nodeName === "BUTTON" && e.target.hasAttribute("data-id") && e.target.hasAttribute("Editar")) {
+                        const index = parseInt(e.target.getAttribute("data-id"), 10);
+                        const row = datatable.data.data[index].cells;
+                        let message = [
+                            "This is row ",
+                            (e.target.closest("tr").rowIndex + 1), " of ",
+                            datatable.options.perPage, " rendered rows and row ",
+                            (index + 1), " of ",
+                            datatable.data.length, " total rows."
+                        ]
+                        const data = [].slice.call(row).map(cell => cell.data)
+                        message = message.join("")
+                        message = `${message}\n\nThe row data is:\n${JSON.stringify(data)}`
+                    }
+                })
+            }
+        )
+    });
+</script>
+</html>

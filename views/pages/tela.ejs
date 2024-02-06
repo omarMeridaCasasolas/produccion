@@ -1,0 +1,297 @@
+<%- include('../partials/head'); %>
+    <body class="bg-light">
+        <%- include('../partials/header'); %>
+        <main class="container border">
+            <br>
+            <h2 class="text-primary text-center">Tela</h2>
+            <button type="button" class="btn btn-success"  data-bs-toggle="modal" data-bs-target="#myModal">Agregar</button>
+            <br>
+            <table id="tablaTela" class="table"></table>
+        </main>
+        <div class="modal" id="myModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <!-- Modal Header -->
+                    <div class="modal-header bg-success text-white">
+                        <h4 class="modal-title">Agregar Tela</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        <form id="formAddTela" autocomplete="off">
+                            <class class="row mb-2">
+                                <class class="col-6">
+                                    <label for="addCodigoTela">Codigo</label>
+                                    <input type="text" name="codigo" id="addCodigoTela" class="form-control" maxlength="31">
+                                </class>
+                                <class class="col-6">
+                                    <label for="addNombreTela">Nombre</label>
+                                    <input type="text" name="nombre" id="addNombreTela" class="form-control" required maxlength="255">
+                                </class>
+                            </class>
+                            <class class="row mb-2">
+                                <class class="col-6">
+                                    <label for="addTipoTela">Tipo</label>
+                                    <select name="tipo" id="addTipoTela" class="form-control">
+                                        <option value="Algodon">Algodon</option>
+                                        <option value="Poliester">Poliester</option>
+                                        <option value="Lino">Lino</option>
+                                        <option value="Seda">Seda</option>
+                                    </select>
+                                </class>
+                                <class class="col-6">
+                                    <label for="addMetrajeTela">Metraje</label>
+                                    <input type="number" name="metraje" id="addMetrajeTela" class="form-control" required min="0" step="0.01" value="0">
+                                </class>
+                            </class>
+                            <class class="row">
+                                <class class="col-6">
+                                    <label for="addValorTela">Valor</label>
+                                    <input type="number" name="valor" id="addValorTela" class="form-control" required min="0" step="0.01" value="0">
+                                </class>
+                                <class class="col-6">
+                                    <label for="addEstadoTela">Estado</label>
+                                    <select name="estado" id="addEstadoTela" class="form-control">
+                                        <option value="1">Activo</option>
+                                        <option value="0">Inactivo</option>
+                                    </select>
+                                </class>
+                            </class>
+                            <hr>
+                            <div class="text-center">
+                                <input type="submit" class="btn btn-primary" value="Agregar">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ELIMIMAR TELA  -->
+        <div class="modal fade" id="modalEliminarTela">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger">
+                        <h5 class="modal-title">Eliminar tela</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formDeletTela">
+                            <span class='d-none' id="idDeletTela"></span>
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" id="checkConfirmacion"> 
+                                    ¿Usted esta seguro que desea eliminar la tela con nombre <strong id='deletNombrTela'></strong> 
+                                    registrado en el sistema?
+                                </label>
+                            </div>
+                            <br>
+                            <span class="text-danger">Solo sera posible eliminar si no existe registros de ventas relacionados</span>
+                            <div class="text-center my-3">
+                                <input type="submit" class="btn btn-primary" id="btnDeletTela" value="Eliminar" disabled>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+<%- include('../partials/footer'); %>
+<script>
+    let datatable;
+    let datosTelas;
+    // let datoTela;
+    const columnData = [
+        {
+            select: 0,
+            headerClass: "table-success",
+            sort: "desc"
+        },
+        {
+            select: 1,
+            headerClass: "table-success"
+        },
+        {
+            select: 2,
+            headerClass: "table-success"
+        },
+        {
+            select: 3,
+            headerClass: "table-success"
+        },
+        {
+            select: 4,
+            headerClass: "table-success"
+        },
+        {
+            select: 5,
+            headerClass: "table-success"
+        },
+        {
+            select: 6,
+            render: data => data == 1 ? '<span class="badge bg-success">Activo</span>' : '<span class="badge bg-info">Inactivo</span>',
+            headerClass: "table-success"
+        },
+        {
+            select: 7,
+            render: data => `<button type='button' class='btn btn-warning btn-sm' data-id='${data}' data-bs-toggle="modal" data-bs-target="#myModal2" accion="editar"><i class="fas fa-edit"></i></button> 
+            <button type='button' class='btn btn-danger btn-sm' data-id='${data}' data-bs-toggle="modal" data-bs-target="#modalEliminarTela" accion="eliminar"><i class="fas fa-trash-alt"></i></button>`,
+            // type: "text",
+            headerClass: "table-success"
+        }
+    ]
+    // Customise our labels
+    const labelData = {
+        placeholder: "Buscando resgistros...",
+        searchTitle: "Buscar dentro de los resgistros",
+        perPage: "Registros por pagina",
+        noRows: "No se encontraron resultados",
+        info: "Mostrando registros del {start} al {end} de un total de {rows} registros (Page {page} de {pages} paginas)"
+    }
+
+
+    document.addEventListener("DOMContentLoaded", function () {   
+        // AGREGAR TELA 
+        let formAddTela = document.querySelector('#formAddTela');
+        formAddTela.addEventListener('submit',(e)=>{
+            e.preventDefault();
+            let datos = new FormData(e.target);
+            let dataObject = Object.fromEntries(datos.entries());
+            agregarTela(dataObject);
+        });
+
+        // Instantiate
+        obtenerTelas(columnData,labelData);
+
+        let checkEliminar = document.querySelector('#checkConfirmacion');
+        let formDeletTela = document.querySelector('#formDeletTela');
+        
+        checkEliminar.addEventListener('change',(e)=>{
+            e.preventDefault();
+            if(checkEliminar.checked){
+                document.querySelector('#btnDeletTela').removeAttribute('disabled');
+            }else{
+                document.querySelector('#btnDeletTela').setAttribute('disabled',true);
+            }
+        });
+
+        formDeletTela.addEventListener('submit',async (e)=>{
+            e.preventDefault();
+            try {
+                const response = await fetch("/api/tela/"+document.querySelector('#idDeletTela').innerHTML, {
+                    method: "DELETE", // or 'PUT'
+                    // headers: {
+                    //     "Content-Type": "application/json",
+                    // },
+                    // body: JSON.stringify(data),
+                });
+                const result = await response.json();
+                // console.log(result);
+                cerrarModal('modalEliminarTela');
+                if(result.estado === "Eliminado"){
+                    // obtenerTelas(columnData,labelData);
+                    let index = datosTelas.findIndex( x=>{
+                        return x.Id == document.querySelector('#idDeletTela').innerHTML;
+                    });
+                    obtenerTelas(columnData,labelData);
+                    // console.log(datatable);
+                    // datosTelas.splice(index, 1);
+                    // datosTelas = [...datosTelas];
+                    // datatable.refresh(datosTelas);
+                    // console.log(datosTelas);
+                    Swal.fire("Exito!!","Se ha eliminado el personal","success");
+                }else{
+                    Swal.fire("Problema!!",estado.Error,"error");
+                }
+                // console.log("Success:", result);
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        });        
+    });
+
+    function obtenerTelas(columnData,labelData){
+        // if(datatable !== undefined){
+        //     datatable.destroy();
+        // }
+        fetch('/api/tela').then(
+            response => response.json()
+        ).then(
+            data => {
+                let cabezera = ["Id","Codigo","Nombre","Tipo","Valor","Metraje","Estado","Opcion"];
+                // if(datatable !== undefined){
+                //     datatable.destroy();
+                // }
+                console.log(datatable);
+                datatable = new window.simpleDatatables.DataTable("#tablaTela", {
+                    data: {
+                        headings: cabezera,
+                        data: data.map( x =>{
+                            return Object.values(x);
+                        })
+                    },
+                    columns: columnData,
+                    labels: labelData,
+                    type: "string"
+                });
+                datosTelas = data;
+                // console.log(datosTelas);
+                datatable.dom.addEventListener("click", e => {
+                    if(e.target.nodeName === "I" && e.target.classList.contains('fa-trash-alt')){
+                        let padre = e.target.parentNode;
+                        eliminarTela(parseInt(padre.getAttribute("data-id")));
+                    }
+                    // console.log(e.target.parentNode);
+                    if (e.target.nodeName === "BUTTON" && e.target.hasAttribute("data-id")) {
+                        if(e.target.getAttribute("accion") === "eliminar"){
+                            eliminarTela(parseInt(e.target.getAttribute("data-id")));
+                        }
+                    }
+                })
+            }
+        )
+    }
+
+    function eliminarTela(key){
+        let datoTela = datosTelas.find( x =>{
+            return x.Id === key;
+        });
+        document.querySelector('#deletNombrTela').textContent = datoTela.Nombre;
+        document.querySelector('#idDeletTela').textContent = datoTela.Id;
+    }
+
+    async function agregarTela(data){
+        try {
+            const response = await fetch("/api/tela", {
+                method: "POST", // or 'PUT'
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+            });
+            const result = await response.json();
+            cerrarModal('myModal');
+            if(result.estado === "Agregado"){
+                // obtenerTelas(columnData,labelData);
+                Swal.fire("Exito!!","Se ha agregado a un nuevo personal","success");
+            }else{
+                Swal.fire("Problema!!",estado.Error,"error");
+            }
+            // console.log("Success:", result);
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    }
+
+    function cerrarModal(ventana) {
+        // let miModal = new bootstrap.Modal(document.getElementById(ventana));
+        // console.log(miModal);
+        // miModal.hide();
+        var myModalEl = document.getElementById(ventana);
+        var modal = bootstrap.Modal.getInstance(myModalEl)
+        modal.hide();
+    }
+</script>
+</html>

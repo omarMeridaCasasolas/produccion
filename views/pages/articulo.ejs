@@ -1,0 +1,101 @@
+<%- include('../partials/head'); %>
+    <body class="bg-light">
+        <%- include('../partials/header'); %>
+        <main class="container border">
+            <br>
+            <h2 class="text-primary text-center">Articulo</h2>
+            <button type="button" class="btn btn-success">Agregar</button>
+            <br>
+            <table id="tablaArticulo" class="table"></table>
+        </main>
+    </body>
+<%- include('../partials/footer'); %>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {    
+        const columnData = [
+            {
+                select: 0,
+                headerClass: "table-success"
+            },
+            {
+                select: 1,
+                headerClass: "table-success"
+            },
+            {
+                select: 2,
+                headerClass: "table-success"
+            },
+            {
+                select: 3,
+                headerClass: "table-success"
+            },
+            {
+                select: 4,
+                headerClass: "table-success"
+            },
+            {
+                select: 5,
+                headerClass: "table-success"
+            },
+            {
+                select: 6,
+                render: data => data == 1 ? '<span class="badge bg-success">Activo</span>' : '<span class="badge bg-info">Inactivo</span>',
+                headerClass: "table-success"
+            },
+            {
+                select: 7,
+                render: data => `<button type='button' class='btn btn-warning' data-id='${data}' data-bs-toggle="modal" data-bs-target="#myModal" Editar><i class="fas fa-edit"></i></button> 
+                <button type='button' class='btn btn-danger' data-id='${data}'><i class="fas fa-trash-alt"></i></button>`,
+                type: "text",
+                headerClass: "table-success"
+            }
+        ]
+        // Customise our labels
+        const labelData = {
+            placeholder: "Buscando resgistros...",
+            searchTitle: "Buscar dentro de los resgistros",
+            perPage: "Registros por pagina",
+            noRows: "No se encontraron resultados",
+            info: "Mostrando registros del {start} al {end} de un total de {rows} registros (Page {page} de {pages} paginas)"
+        }
+
+        // Instantiate
+        fetch('/api/articulo').then(
+            response => response.json()
+        ).then(
+            data => {
+                let cabezera = ["Id","Nombre","Detalle","Tipo","Precio","Cantidad","Estado","Opcion"];
+                const datatable = new window.simpleDatatables.DataTable("#tablaArticulo", {
+                    data: {
+                        headings: cabezera,
+                        data: data.map( x =>{
+                            // delete x['id'];
+                            // delete x['Password'];
+                            return Object.values(x);
+                        })
+                    },
+                    columns: columnData,
+                    labels: labelData,
+                    type: "string"
+                })
+                datatable.dom.addEventListener("click", e => {
+                    if (e.target.nodeName === "BUTTON" && e.target.hasAttribute("data-id") && e.target.hasAttribute("Editar")) {
+                        const index = parseInt(e.target.getAttribute("data-id"), 10);
+                        const row = datatable.data.data[index].cells;
+                        let message = [
+                            "This is row ",
+                            (e.target.closest("tr").rowIndex + 1), " of ",
+                            datatable.options.perPage, " rendered rows and row ",
+                            (index + 1), " of ",
+                            datatable.data.length, " total rows."
+                        ]
+                        const data = [].slice.call(row).map(cell => cell.data)
+                        message = message.join("")
+                        message = `${message}\n\nThe row data is:\n${JSON.stringify(data)}`
+                    }
+                })
+            }
+        )
+    });
+</script>
+</html>
