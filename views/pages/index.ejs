@@ -84,8 +84,8 @@
                 });
                 const result = await response.json();
                 if(result){
-                    localStorage.setItem('jwtToken', result.token);
-                    // console.log(result.token);
+                    localStorage.setItem('jwtToken', result.token.trim());
+                    console.log(result);
                     console.log("Success:", result.token);
                 }
             } catch (error) {

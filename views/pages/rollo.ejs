@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rollo</title>
+    <%- include('../partials/head'); %>
+
+</head>
+<body>
+    <%- include('../partials/header'); %>
+    <main class="container border shadow p-4 mb-4 mx-auto my-1 bg-white">
+        <h3 class="text-center p-2 text-primary">Lista rollos</h3>
+        <div>
+            <button class="btn btn-success" data-toggle='modal' data-target='#modalAgregarRollo'>Agregar rollo</button>
+        </div>
+        <br>
+        <div class="table-responsive">
+            <table id="tablaRollo" class="table compact bordered table-hover" style="width:100%">
+                <thead>
+                    <tr class='bg-dark text-white'>
+                        <th>ID</th>
+                        <th>Proveedor</th>
+                        <th>Tela</th>
+                        <th>Cod. rollo</th>
+                        <th>Detalle</th>
+                        <th>Altura</th>
+                        <th>Ancho</th>
+                        <th>Metraje</th>
+                        <th>Precio</th>
+                        <th>Estado</th>
+                        <th>Opc</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <!-- MODAL PARA AGREGAR pRODUCTO-->
+    <div class="modal fade" id="modalAgregarRollo" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success">
+                    <h5 class="modal-title"> Agregar rollo</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addFormRollo" autocomplete="off">
+                        <div class="form-group">
+                            <h6>Tela</h6>
+                            <select name="tela" id="addTela" style="width: 100%;" required></select>
+                        </div>
+                        <div class="form-group">
+                            <h6>Proveedor</h6>
+                            <select name="proveedor" id="addProveedor" style="width: 100%;" required></select>
+                        </div>
+                        <div class="row">
+                            <div class="col-5 form-group">
+                                <label for="codigo">Codigo:</label>
+                                <input type="text" name="codigo" id="addCodigoRollo" class="form-control" required>
+                            </div>
+                            <div class="col-7 form-group">
+                                <label for="detalle">Detalle:</label>
+                                <input type="text" name="detalle" id="addDetalleRollo" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-4 form-group">
+                                <label for="alto">Alto:</label>
+                                <input type="number" name="alto" id="addAltoRollo" class="form-control" required step="0.01" value="1.00">
+                            </div>
+                            <div class="col-4 form-group">
+                                <label for="ancho">Ancho:</label>
+                                <input type="number" name="ancho" id="addAnchoRollo" class="form-control" required step="0.01" value="1.00">
+                            </div>
+                            <div class="col-4 form-group">
+                                <label for="metraje">Metraje</label>
+                                <input type="number" name="metraje" id="addMetrajeRollo" class="form-control" required step="0.01" value="1.00">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-5 form-group">
+                                <label for="precio">Precio:</label>
+                                <input type="number" name="precio" id="addPrecioRollo" class="form-control" required step="0.01" value="1.00" min="1">
+                            </div> 
+                            <div class="col-7 form-group">
+                                <label for="estado">Estado:</label>
+                                <select name="estado" id="addEstadoRollo" class='form-control'>
+                                    <option value="1">Activo</option>
+                                    <option value="0">Inactivo</option>
+                                </select>
+                            </div>  
+                        </div>
+                        <hr>
+                        <div class="text-center">
+                            <input type="submit" class="btn btn-primary" value="Agregar">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA ELIMINAR ROLLO  -->
+    <div class="modal fade" id="modalEliminarRollo" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title">Eliminar rollo</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="formDeletRollo">
+                        <span id="deletIdRollo" class='d-none'></span>
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input type="checkbox" class="form-check-input" value="" id="checkConfirmacion"> ¿Usted esta de acuerdo con eliminar 
+                                el rollo <strong id='deletCodigoRollo'></strong> siempre y cuando no haya ninguna registro de uso asignado?
+                            </label>
+                        </div>
+                        <br>
+                        <div class="text-center">
+                            <input type="submit" class="btn btn-primary" value="Eliminar" disabled id="btnEliminarRollo">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+    <%- include('../partials/footer'); %>   
+    <script src="js/rollo.js"></script>
+</html>

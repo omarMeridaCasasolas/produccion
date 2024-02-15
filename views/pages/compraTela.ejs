@@ -25,15 +25,27 @@
                     <!-- Modal body -->
                     <div class="modal-body">
                         <form id="formAddCompraTela" autocomplete="off">
-                            <div class="form-group">
-                                <select id="selectpicker" class="wide selectize open">
-                                    <option value="ketchup mustard">Hot Dog, Fries and a Soda</option>
-                                    <option value="mustard">Burger, Shake and a Smile</option>
-                                    <option value="frosting">Sugar, Spice and all things nice</option>
+                            <div class="form-group mb-3">
+                                <select id="addProveedorCompra" class="wide selectize open">
                                 </select>
                                 <br>
                                 <br>
                             </div>
+                            <div class="row">
+                                <div class="col-2">Codigo</div>
+                                <div class="col-3">Nombre</div>
+                                <div class="col-2">Metraje</div>
+                                <div class="col-1">Precio</div>
+                                <div class="col-2">Subtotal</div>
+                                <div class="col-2">Opc</div>
+                            </div>
+                            <div class="row" id="compraProducto">
+                            
+                            </div>
+                            <table id="tablaAddProductos">
+
+                            </table>
+
                             <br>
                             <div class="text-center">
                                 <input type="submit" class="btn btn-primary" value="Agregar">
@@ -47,8 +59,10 @@
     </body>
 <%- include('../partials/footer'); %>
 <script>
+    let selectAddProveedor = document.getElementById('addProveedorCompra');
     document.addEventListener("DOMContentLoaded", function () {   
-        let select = NiceSelect.bind(document.getElementById('selectpicker'),{searchable:true});
+        sucursalDisponibles();
+        telasDisponibles();
         const columnData = [
             {
                 select: 0,
@@ -98,7 +112,6 @@
             noRows: "No se encontraron resultados",
             info: "Mostrando registros del {start} al {end} de un total de {rows} registros (Page {page} de {pages} paginas)"
         }
-        
         let token = localStorage.getItem("jwtToken");
         const headers = new Headers({
             'Content-Type': 'application/json',
@@ -115,7 +128,7 @@
             response => response.json()
         ).then(
             data => {
-                console.log(data);
+                // console.log(data);
                 let cabezera = ["Id","Fecha","Personal","Proveedor","Precio","Efectivo","Digital","Telas","Opcion"];
                 const datatable = new window.simpleDatatables.DataTable("#tablaCompraTela", {
                     data: {
@@ -151,5 +164,40 @@
             }
         )
     });
+
+    async function sucursalDisponibles(){
+        let response = await fetch("/api/proveedoresDisponibles");
+        let sucursales = await response.json();
+        sucursales.forEach( x =>{
+            let opt = document.createElement('option');
+            opt.value = x.Id;
+            opt.innerHTML = x.Nombre;
+            selectAddProveedor.appendChild(opt);
+        });
+        let select = NiceSelect.bind(selectAddProveedor,{searchable:true});
+        console.log(sucursales);
+    } 
+
+    async function telasDisponibles(){
+        let response = await fetch("/api/telasDisponibles");
+        let telas = await response.json();
+        // console.log(telas);
+        let tablaProuctos = new window.simpleDatatables.DataTable("#tablaAddProductos", {
+            data: {
+                headings: Object.keys(telas[0]),
+                data: telas.map( x =>{
+                    // delete x['id_personal'];
+                    // delete x['id_proveedor'];
+                    // delete x['pago_compra_tela'];
+                    // delete x['qr_compra_tela'];
+                    return Object.values(x);
+                })
+            }
+            // ,
+            // columns: columnData,
+            // labels: labelData,
+            // type: "string"
+        })
+    } 
 </script>
 </html>
