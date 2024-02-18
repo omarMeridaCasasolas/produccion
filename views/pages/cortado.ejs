@@ -1,0 +1,146 @@
+    <%- include('../partials/head',{document: 'Cortado'}); %>
+</head>
+<body>
+    <%- include('../partials/header',{document: 'Cortado'}); %>
+    <main class="container border shadow p-4 mb-4 mx-auto my-1 bg-white">
+        <h3 class="text-center p-2 text-primary">Lista cortados</h3>
+        <div>
+            <button class="btn btn-success" data-toggle='modal' data-target='#modalAsignacionRollo'>Agregar cortado</button>
+        </div>
+        <br>
+        <div class="table-responsive">
+            <table id="tablaCortado" class="table compact bordered table-hover" style="width:100%">
+                <thead>
+                    <tr class='bg-dark text-white'>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Cortador</th>
+                        <th>Personal</th>
+                        <th>Metraje</th>
+                        <th>Estimado</th>
+                        <th>Entrega</th>
+                        <th>Estado</th>
+                        <th>Opc</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <!-- MODAL PARA AGREGAR CORTADO -->
+    <div class="modal fade" id="modalAsignacionRollo" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success">
+                    <h5 class="modal-title">Agregar cortado <span id='detalleAddSucursalUnidad'></span></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="formAddCortado" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="form-group col-8">
+                                <label for="cortador">Cortador</label>
+                                <select id="addCortado" name='cortador' required style='width:100%;'></select>
+                            </div>
+                            <div class="form-group col-4">
+                                <label for="estimacion">Cortes estimados</label>
+                                <input type="number" name="estimacion" class="form-control form-control-sm" value="1" min="0" step="1">
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row text-center mx-0">
+                            <div class="col-2"><strong>Codigo</strong></div>
+                            <div class="col-3"><strong>Tela</strong></div>
+                            <div class="col-2"><strong>Detalle</strong></div>
+                            <div class="col-2"><strong>Dimension</strong></div>
+                            <div class="col-2"><strong>Metraje</strong></div>
+                            <div class="col-1 text-center"><strong>Elim.</strong></div>
+                        </div>
+
+                        <div id="contenedorAddRollo" style="font-size: 13px;">
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-9"></div>
+                            <div class="col-sm-3">Total metraje:<input type="text" name="metrajeTotal" id="metrajeTotal" disabled class='form-control' value='0'></div>  
+                        </div>
+                        <hr>
+                        <div class="table-responsive">
+                            <table id="tablaRollos" class="display compact table table-sm" style="width:100%">
+                                <thead>
+                                    <tr class='bg-dark text-white'>
+                                        <th>Codigo</th>
+                                        <th>Tela</th>
+                                        <th>Tipo</th>
+                                        <th>Detalle</th>
+                                        <th>Altura</th>
+                                        <th>Ancho</th>
+                                        <th>Metraje</th>
+                                        <th>Opc.</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center">
+                            <input type="submit" class="btn btn-primary" value="Agregar" id='btnVentaUnidad'>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA EDITAR CORTADO -->
+    <div class="modal fade" id="modalAgregarCorte" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title">Agregar cortes</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="formCortesObtenido">
+                        <div class="row text-center mx-0">
+                            <div class="col-3"><strong>Codigo</strong></div>
+                            <div class="col-3"><strong>Tela</strong></div>
+                            <div class="col-2"><strong>Detalle</strong></div>
+                            <div class="col-2"><strong>Dimension</strong></div>
+                            <div class="col-2"><strong>Metraje</strong></div>
+                        </div>
+                        <div id="contenedorAddRollos"></div>
+                        <hr>
+                        <h5 class="text-danger">Cortes obtenidos</h5>
+                        <div class="row text-center mx-0">
+                            <div class="col-2"><strong>Codigo</strong></div>
+                            <div class="col-3"><strong>Detalle</strong></div>
+                            <div class="col-2"><strong>Talla</strong></div>
+                            <div class="col-2"><strong>Metraje</strong></div>
+                            <div class="col-2"><strong>Cantidad</strong></div>
+                            <div class="col-1"><strong>Opc.</strong></div>
+                        </div>
+                        <div id="contAddRollosInput">
+                        </div>
+                        <br>
+                        <button type="button" class="btn btn-success btn-block" id="btnAgregarCortes">Registrar</button>
+                        <hr>
+                        <div class="text-center">
+                            <input type="submit" class="btn btn-primary" value="Actualizar" id='btnEditVentaUnidad'>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+    <%- include('../partials/footer'); %>   
+    <script src="js/cortado.js"></script>
+</html>

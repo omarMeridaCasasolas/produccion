@@ -85,8 +85,7 @@
                 const result = await response.json();
                 if(result){
                     localStorage.setItem('jwtToken', result.token.trim());
-                    console.log(result);
-                    console.log("Success:", result.token);
+                    window.location.href = 'cortado';
                 }
             } catch (error) {
                 console.error("Error:", error);

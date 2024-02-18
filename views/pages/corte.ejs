@@ -1,0 +1,36 @@
+<%- include('../partials/head',{document: 'Corte'}); %>
+</head>
+<body>
+    <%- include('../partials/header',{document: 'Corte'}); %>
+    <main class="container border shadow p-4 mb-4 mx-auto my-1 bg-white">
+        <h3 class="text-center p-2 text-primary">Lista cortes</h3>
+        <div>
+            <button class="btn btn-success" data-toggle='modal' data-target='#modalAsignacionRollo'>Agregar cortado</button>
+        </div>
+        <br>
+        <div class="table-responsive">
+            <table id="tablaCorte" class="table compact bordered table-hover" style="width:100%">
+                <thead>
+                    <tr class='bg-dark text-white'>
+                        <th>ID</th>
+                        <th>Codigo</th>
+                        <th>Empleado</th>
+                        <th>Personal</th>
+                        <th>Detalle</th>
+                        <th>Talla</th>
+                        <th>Metraje</th>
+                        <th>Cantidad</th>
+                        <th>Estado</th>
+                        <th>Opc</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+</body>
+    <%- include('../partials/footer'); %>   
+    <script src="js/corte.js"></script>
+</html>

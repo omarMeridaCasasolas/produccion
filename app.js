@@ -51,6 +51,14 @@ app.get('/compraTela', function(req, res) {
     res.render('pages/compraTela');
 });
 
+app.get('/cortado', function(req, res) {
+    res.render('pages/cortado');
+});
+
+app.get('/corte', function(req, res) {
+    res.render('pages/corte');
+});
+
 
 
 // API;
@@ -240,6 +248,25 @@ app.get('/api/rollo',(req, res) => {
     }
 });
 
+app.get('/api/cortadoRollo/:id',(req, res) => {
+    try {
+        let idCortado = req.params.id;
+        let query = `SELECT id_cortado, nombre_tela AS tela, tipo_tela AS tipo, id_rollo,detalle_rollo AS detalle, CONCAT(altura_cm_rollo," X ",ancho_cm_rollo) AS dimension, codigo_rollo AS codigo, metraje_cortado_rollo AS metraje 
+        FROM rollo INNER JOIN cortado_rollo USING(id_rollo) INNER JOIN tela USING(id_tela) WHERE id_cortado = ?;`;
+        connection.query(query, [idCortado], (error, results) => {
+            if (error) {
+                console.log(error);
+                res.json({ error });
+            }else{
+                res.json(results);
+            }
+        });    
+    } catch (error) {
+        console.error('Se produjo un error:', error);
+        res.status(500).json({resultado:'Ocurrió un error en el servidor.'});
+    }
+});
+
 app.post('/api/rollo',(req, res) => {
     try {
         let data = req.body; 
@@ -277,8 +304,26 @@ app.delete('/api/rollo/:id',(req, res) => {
     }  
 });
 
+app.get('/api/getRollosDisponibles',(req, res) => {
+    try {
+        let query = `SELECT id_rollo AS id, codigo_rollo AS codigo, nombre_tela AS tela, tipo_tela AS tipo, detalle_rollo AS detalle, altura_cm_rollo AS altura, ancho_cm_rollo AS ancho, 
+        resto_rollo AS resto FROM rollo INNER JOIN tela USING(id_tela) WHERE resto_rollo > 0 AND estado_rollo = 1;`;
+        connection.query(query, (error, results) => {
+            if (error) {
+                console.log(error);
+                res.json({ error });
+            }else{
+                res.json({data:results});
+            }
+        });    
+    } catch (error) {
+        console.error('Se produjo un error:', error);
+        res.status(500).json({resultado:'Ocurrió un error en el servidor.'});
+    }
+});
+
 // EMPLEADO 
-app.get('/api/empleado',(req, res) => {
+app.get('/api/empleado',verificarToken,(req, res) => {
     try {
         connection.query(`SELECT id_empleado AS id,nombre_empleado AS nombre, celular_empleado AS celular,usuario_empleado AS usuario, 
         password_empleado AS password, tipo_empleado AS tipo,estado_empleado AS estado FROM empleado;`, (error, results) => {
@@ -295,10 +340,9 @@ app.get('/api/empleado',(req, res) => {
     }
 });
 
-app.post('/api/empleado',(req, res) => {
+app.post('/api/empleado',verificarToken,(req, res) => {
     try {
         let data = req.body; 
-        console.log(data);
         let query = `INSERT INTO empleado(nombre_empleado,celular_empleado,usuario_empleado,password_empleado,tipo_empleado,estado_empleado) VALUES(?,?,?,?,?,?);`;
         connection.query(query, [data.nombre,data.celular,data.usuario,data.password,data.tipo,data.estado], (error, results) => {
             if (error) {
@@ -332,34 +376,263 @@ app.delete('/api/empleado/:id',(req, res) => {
     }  
 });
 
+//CORTADOR
+app.get('/api/cortado',(req, res) => {
+    try {
+        let query = `SELECT id_cortado AS id, id_personal,nombre_personal AS personal, id_empleado, nombre_empleado AS empleado, fecha_cortado AS fecha,cantidad_estimado_cortado AS estimado,
+        cantidad_entregada_cortado AS entregado, metraje_entregado AS metraje, estado_cortado AS estado_cortado FROM cortado INNER JOIN personal USING(id_personal) INNER JOIN empleado USING(id_empleado)`;
+        connection.query(query, (error, results) => {
+            if (error) {
+                console.log(error);
+                res.json({ error });
+            }else{
+                res.json({data:results});
+            }
+        });    
+    } catch (error) {
+        console.error('Se produjo un error:', error);
+        res.status(500).json({resultado:'Ocurrió un error en el servidor.'});
+    }
+});
+
+app.post('/api/cortado',verificarToken,(req, res) => {
+    try {
+        let data = req.body; 
+        let telasCortar = [];
+        let metrajeTotal = 0.0;
+        for (let key in data) {
+            if (key.startsWith('IdCant_')) {
+                let x = data[key];
+                metrajeTotal += parseFloat(x);
+                let arr = key.split('_');
+                let obj = {idRollo: arr[1], metraje: x}
+                telasCortar.push(obj);
+            }
+        }
+        let query = `INSERT INTO cortado(id_personal,id_empleado,cantidad_estimado_cortado,metraje_entregado) VALUES(?,?,?,?)`;
+        connection.query(query,[data.id_personal,data.cortador,data.estimacion,metrajeTotal] ,(error, results) => {
+            if (error) {
+                console.log(error);
+                res.json({ error });
+            }else{
+                // res.json({data:results});
+                let query = `CALL asignarRolloCortador(?,?,?)`;
+                for (let index = 0; index < telasCortar.length; index++) {
+                    let element = telasCortar[index];
+                    connection.query(query,[results.insertId,element.idRollo,element.metraje] ,(error, resultados) => {
+                        if (error) {
+                            console.log(error);
+                            res.json({ error });
+                        }
+                    }); 
+                }
+                res.json({"estado":"Agregado"});
+
+            }
+        });    
+    } catch (error) {
+        console.error('Se produjo un error:', error);
+        res.status(500).json({resultado:'Ocurrió un error en el servidor.'});
+    }
+});
+
+//COTADOR
+app.get('/api/cortador',(req, res) => {
+    try {
+        let query = `SELECT id_empleado AS id, nombre_empleado AS cortador, estado_empleado AS estado FROM empleado WHERE tipo_empleado = 'Cortador';`;
+        connection.query(query, (error, results) => {
+            if (error) {
+                console.log(error);
+                res.json({ error });
+            }else{
+                res.json(results);
+            }
+        });    
+    } catch (error) {
+        console.error('Se produjo un error:', error);
+        res.status(500).json({resultado:'Ocurrió un error en el servidor.'});
+    }
+});
+
+//CORTE
+app.get('/api/corte',(req, res) => {
+    try {
+        let query = `SELECT id_corte AS id,IFNULL(nombre_empleado, "No Existe") AS empleado,IFNULL(nombre_personal, "No Existe") AS personal, codigo_corte AS codigo, detalle_corte AS detalle,
+        talla_corte AS talla, metraje_inicio_corte AS metraje_inicio, metraje_actual_corte AS metraje_actual, cantidad_inicio_corte AS cantidad_inicio, 
+        cantidad_actual_corte AS cantidad_actual, estado_corte FROM corte LEFT JOIN empleado USING(id_empleado) LEFT JOIN personal USING(id_personal);`;
+        connection.query(query, (error, results) => {
+            if (error) {
+                console.log(error);
+                res.json({ error });
+            }else{
+                // res.json(results);
+                res.json({data:results});
+            }
+        });    
+    } catch (error) {
+        console.error('Se produjo un error:', error);
+        res.status(500).json({resultado:'Ocurrió un error en el servidor.'});
+    }
+});
+
+app.post('/api/cortadosEntregados',(req, res) => {
+    try {
+        let data = req.body; 
+        let cortesObtenidos = [];
+        for (let key in data) {
+            let x = data[key];
+            if (key.startsWith('codigoAddCorte_')) {
+                // console.log(key,x,cortesObtenidos);
+                agregarCodigoCorte(key,x,cortesObtenidos);
+                continue;
+            }
+            if (key.startsWith('detalleAddCorte_')) {
+                // console.log(key,x,cortesObtenidos);
+                agregarDetalleCorte(key,x,cortesObtenidos);
+                continue;
+            }
+            if (key.startsWith('tallasAddCorte_')) {
+                // console.log(key,x,cortesObtenidos);
+                agregarTallaCorte(key,x,cortesObtenidos);
+                continue;
+            }
+            if (key.startsWith('metrajeAddCorte_')) {
+                // console.log(key,x,cortesObtenidos);
+                agregarMetrajeCorte(key,x,cortesObtenidos);
+                continue;
+            }
+            if (key.startsWith('cantidadAddCorte_')) {
+                // console.log(key,x,cortesObtenidos);
+                agregarCantidadCorte(key,x,cortesObtenidos);
+                continue;
+            }
+
+        }
+        // res.json(cortesObtenidos);
+        let query = `INSERT INTO corte(codigo_corte,detalle_corte,talla_corte,metraje_inicio_corte,metraje_actual_corte,cantidad_inicio_corte,cantidad_actual_corte,estado_corte) VALUES(?,?,?,?,?,?,?)`;
+        cortesObtenidos.forEach(x=>{
+            connection.query(query,[x.codigo,x.detalle,x.talla,x.metraje,x.metraje,x.cantidad,x.cantidad,'Revision'] ,(error, results) => {
+                if (error) {
+                    console.log(error);
+                    res.json({ error });
+                }
+                // results.affectedRows
+            });   
+        });
+        res.json({"estado":"Agregado"});
+    } catch (error) {
+        console.error('Se produjo un error:', error);
+        res.status(500).json({resultado:'Ocurrió un error en el servidor.'});
+    }
+});
+
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
 
 function verificarToken(req, res, next) {
     const token = req.headers['authorization'];
-    // console.log(token);
-    // token = token.replace('Bearer ', '');
     if (!token) {
         return res.status(401).json({ mensaje: 'Token no proporcionado' });
     }
-    // let payload;
-    // try {
-    //     let payload = jwt.verify(token, secretKey);
-    //     console.log(payload);
-    //     next();
-    // } catch (error) {
-    //     console.log(error);
-    //     return res.status(401).json({ mensaje: 'Token inválido' });
-    // }
-    jwt.verify(token, secretKey, (err, decoded) => {
-        if (err) {
-            console.log(err.name);
-            return res.status(401).json({ mensaje: 'Token inválido' });
-        } else {
-            // El token es válido, puedes acceder a los datos decodificados
-            req.decoded = decoded;
-            next();
+    try {
+        let payload = jwt.verify(token, secretKey);
+        // console.log(payload);
+        req.body.id_personal = payload.data.identificador;
+        next();
+    } catch (error) {
+        console.log(error);
+        return res.status(401).json({ mensaje: 'Token inválido' });
+    }
+}
+
+function agregarCodigoCorte(key,x,cortesObtenidos){
+    let i = 0;
+    let bandera = true;
+    let dato = key.split('_');
+    let id = dato[1];
+    while (i<cortesObtenidos.length && bandera) {
+        if(cortesObtenidos[i].id == id){
+            cortesObtenidos[i]['codigo'] = x;
+            bandera = false;
         }
-    });
+        i++;
+    }
+    if(bandera){
+        let obj = {id:dato[1],codigo:x}
+        cortesObtenidos.push(obj);
+    }
+}
+
+function agregarDetalleCorte(key,x,cortesObtenidos){
+    let i = 0;
+    let bandera = true;
+    let dato = key.split('_');
+    let id = dato[1];
+    while (i<cortesObtenidos.length && bandera) {
+        if(cortesObtenidos[i].id == id){
+            cortesObtenidos[i]['detalle'] = x;
+            bandera = false;
+        }
+        i++;
+    }
+    if(bandera){
+        let obj = {id:dato[1],detalle:x}
+        cortesObtenidos.push(obj);
+    }
+}
+
+
+function agregarTallaCorte(key,x,cortesObtenidos){
+    let i = 0;
+    let bandera = true;
+    let dato = key.split('_');
+    let id = dato[1];
+    while (i<cortesObtenidos.length && bandera) {
+        if(cortesObtenidos[i].id == id){
+            cortesObtenidos[i]['talla'] = x;
+            bandera = false;
+        }
+        i++;
+    }
+    if(bandera){
+        let obj = {id:dato[1],talla:x}
+        cortesObtenidos.push(obj);
+    }
+}
+
+function agregarMetrajeCorte(key,x,cortesObtenidos){
+    let i = 0;
+    let bandera = true;
+    let dato = key.split('_');
+    let id = dato[1];
+    while (i<cortesObtenidos.length && bandera) {
+        if(cortesObtenidos[i].id == id){
+            cortesObtenidos[i]['metraje'] = x;
+            bandera = false;
+        }
+        i++;
+    }
+    if(bandera){
+        let obj = {id:dato[1],metraje:x}
+        cortesObtenidos.push(obj);
+    }
+}
+
+function agregarCantidadCorte(key,x,cortesObtenidos){
+    let i = 0;
+    let bandera = true;
+    let dato = key.split('_');
+    let id = dato[1];
+    while (i<cortesObtenidos.length && bandera) {
+        if(cortesObtenidos[i].id == id){
+            cortesObtenidos[i]['cantidad'] = x;
+            bandera = false;
+        }
+        i++;
+    }
+    if(bandera){
+        let obj = {id:dato[1],cantidad:x}
+        cortesObtenidos.push(obj);
+    }
 }

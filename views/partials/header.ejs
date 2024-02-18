@@ -44,6 +44,13 @@
         </div>
     </div>
 </nav>  -->
+<% function verificarDocumente(document,actual) { %>
+    <% if (document == actual) { %>
+        <% return "active"; %>
+    <% } else { %>
+        <% return ""; %>
+    <% } %>
+<% } %>
 
 <nav class="navbar navbar-expand-sm navbar-dark bg-primary">
     <a class="navbar-brand" href="#">Navbar</a>
@@ -52,12 +59,15 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
-        <a class="nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
-        <a class="nav-link" href="#">Articulo</a>
-        <a class="nav-link" href="#">Tela</a>
-        <a class="nav-link" href="#">Rollo</a>
-        <a class="nav-link" href="#">Personal</a>
-        <a class="nav-link" href="#">Proveedor</a>
+        <!-- <a class="nav-link active" href="#">Home <span class="sr-only">(current)</span></a> -->
+        <a class="nav-link <%= verificarDocumente(document,'Cortado') %>" href="/cortado">Cortado</a>
+        <a class="nav-link <%= verificarDocumente(document,'Articulo') %>" href="/articulo">Articulo</a>
+        <a class="nav-link <%= verificarDocumente(document,'Corte') %>" href="/corte">Corte</a>
+        <a class="nav-link <%= verificarDocumente(document,'Tela') %>" href="/tela">Tela</a>
+        <a class="nav-link <%= verificarDocumente(document,'Rollo') %>" href="/rollo">Rollo</a>
+        <a class="nav-link <%= verificarDocumente(document,'Personal') %>" href="/personal">Personal</a>
+        <a class="nav-link <%= verificarDocumente(document,'Proveedor') %>" href="/proveedor">Proveedor</a>
+        <a class="nav-link <%= verificarDocumente(document,'Empleado') %>" href="/empleado">Empleado</a>
       </div>
     </div>
   </nav>

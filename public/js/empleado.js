@@ -13,6 +13,9 @@ $(document).ready(function () {
             type: "POST",
             url: "/api/empleado",
             data: formData,
+			headers: {
+				'Authorization': jwtToken
+			},
             dataType: "JSON",
             success: function (response) {
                 if(response.estado == "Agregado"){
@@ -29,7 +32,6 @@ $(document).ready(function () {
     //ELIMINAR EMPLEADO
 	$("#tablaEmpleado tbody").on('click','button.deletEmpleado',function () {
 		let datos = tablaEmpleado.row( $(this).parents('tr') ).data();
-        console.log(datos);
         $("#deletIdEmpleado").html(datos.id);
         $("#deletNombreEmpleado").html(datos.nombre);
     });
@@ -50,13 +52,18 @@ $(document).ready(function () {
 		$.ajax({
 			type: "DELETE",
 			url: "/api/empleado/"+$("#deletIdEmpleado").html(),
+			// headers: {
+			// 	'Authorization': jwtToken
+			// },
+			// headers: {
+			// 	'Authorization': 'Bearer ' + jwtToken
+			// },
 			dataType: "JSON",
 			beforeSend: function() {
 				Swal.fire('Espere por favor...');
 				Swal.showLoading();
 			},
 			success: function (response) {
-				console.log(response);
 				if(response.estado == "Eliminado"){
 					$('#checkConfirmacion').prop('checked', false);
 					$('#btnEliminarEmpleado').prop("disabled", true);
@@ -116,7 +123,7 @@ function getListaEmpleados(){
             "type": "GET",
 			url: "/api/empleado",
             "headers": {
-                "Authorization": `Bearer ${jwtToken}`
+                "Authorization": `${jwtToken}`
             },
 			// data: { metodo: "getListaUsuarios"},
 		},
